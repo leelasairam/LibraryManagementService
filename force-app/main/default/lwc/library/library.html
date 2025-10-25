@@ -1,0 +1,55 @@
+<template>
+    <!--container-->
+    <div class="container">
+        <!--Tabs-->
+        <lightning-tabset variant="vertical">
+            <!--Home-->
+            <lightning-tab label="Home">
+                <div class="home-tab" lwc:ref="bookSearch">
+                    <!--Search Bar-->
+                    <lightning-card>
+                        <p slot="title"><lightning-icon icon-name="standard:search" size="small"></lightning-icon> &nbsp; Search Book</p>
+                        <div>
+                            <lightning-layout>
+                                <lightning-layout-item padding="around-small">
+                                    <lightning-combobox label="Search By" options={searchByOptions} variant="label-hidden"
+                                        placeholder="Search By" class="search-field"></lightning-combobox>
+                                </lightning-layout-item>
+                                <lightning-layout-item padding="around-small">
+                                    <lightning-input label="value" variant="label-hidden" placeholder="Enter value..." class="search-value"></lightning-input>
+                                </lightning-layout-item>
+                                <lightning-layout-item padding="around-small">
+                                    <lightning-button label="Search" variant="brand" onclick={handleSearch}></lightning-button>
+                                    <lightning-button label="Reset" variant="destructive-text" onclick={resetResult} class="reset-btn"></lightning-button>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                        </div>
+                    </lightning-card>
+                    <br/>
+                    <!--data table-->
+                    <lightning-card>
+                        <p slot="title"><lightning-icon icon-name="standard:article" size="small"></lightning-icon> &nbsp; Books</p>
+                        <lightning-button label="Borrow" slot="actions"></lightning-button>
+                        <div style="height: 400px;">
+                            <lightning-datatable key-field="Id" data={books} columns={columns}></lightning-datatable>
+                        </div>
+                    </lightning-card>
+                    
+                </div>
+            </lightning-tab>
+            <!--Borrowed-->
+            <lightning-tab label="Borrowed">
+                <div>Two Content !</div>
+            </lightning-tab>
+            <!--Manage Books-->
+            <lightning-tab label="Manage Books">
+                <div>Manage Books !</div>
+            </lightning-tab>
+            <!--User Management-->
+            <lightning-tab label="User Management">
+                <div>Three Content !</div>
+            </lightning-tab>
+            
+        </lightning-tabset>
+    </div>
+</template>
