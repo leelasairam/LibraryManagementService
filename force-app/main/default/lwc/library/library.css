@@ -10,3 +10,9 @@
 .reset-btn{
     margin-left: 0.5rem;
 }
+
+.search-bar{
+    border-style:ridge;
+    border-radius: 5px;
+    padding: 8px;
+}

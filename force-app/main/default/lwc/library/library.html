@@ -3,49 +3,73 @@
     <div class="container">
         <!--Tabs-->
         <lightning-tabset variant="vertical">
-            <!--Home-->
+            <!--###Home-->
             <lightning-tab label="Home">
                 <div class="home-tab" lwc:ref="bookSearch">
                     <!--Search Bar-->
-                    <lightning-card>
-                        <p slot="title"><lightning-icon icon-name="standard:search" size="small"></lightning-icon> &nbsp; Search Book</p>
-                        <div>
-                            <lightning-layout>
-                                <lightning-layout-item padding="around-small">
-                                    <lightning-combobox label="Search By" options={searchByOptions} variant="label-hidden"
-                                        placeholder="Search By" class="search-field"></lightning-combobox>
-                                </lightning-layout-item>
-                                <lightning-layout-item padding="around-small">
-                                    <lightning-input label="value" variant="label-hidden" placeholder="Enter value..." class="search-value"></lightning-input>
-                                </lightning-layout-item>
-                                <lightning-layout-item padding="around-small">
-                                    <lightning-button label="Search" variant="brand" onclick={handleSearch}></lightning-button>
-                                    <lightning-button label="Reset" variant="destructive-text" onclick={resetResult} class="reset-btn"></lightning-button>
-                                </lightning-layout-item>
-                            </lightning-layout>
-                        </div>
-                    </lightning-card>
+                    <div class="search-bar">
+                        <lightning-layout>
+                            <lightning-layout-item padding="around-small">
+                                <lightning-combobox label="Search By" options={searchByOptions} variant="label-hidden"
+                                    placeholder="Search By" class="search-field"></lightning-combobox>
+                            </lightning-layout-item>
+                            <lightning-layout-item padding="around-small">
+                                <lightning-input label="value" variant="label-hidden" placeholder="Enter value..."
+                                    class="search-value"></lightning-input>
+                            </lightning-layout-item>
+                            <lightning-layout-item padding="around-small">
+                                <lightning-button label="Search" variant="brand" onclick={handleSearch}></lightning-button>
+                                <lightning-button label="Reset" variant="destructive-text" onclick={resetResult}
+                                    class="reset-btn"></lightning-button>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </div>
                     <br/>
                     <!--data table-->
                     <lightning-card>
                         <p slot="title"><lightning-icon icon-name="standard:article" size="small"></lightning-icon> &nbsp; Books</p>
-                        <lightning-button label="Borrow" slot="actions"></lightning-button>
+                        <lightning-button-group slot="actions">
+                            <lightning-button label="Borrow" icon-name="utility:record_create"></lightning-button>
+                            <lightning-button if:true={isAdmin} label="Manage" icon-name="utility:edit_form" variant="success"></lightning-button>
+                        </lightning-button-group>
                         <div style="height: 400px;">
-                            <lightning-datatable key-field="Id" data={books} columns={columns}></lightning-datatable>
+                            <lightning-datatable key-field="Id" data={books} columns={booksColumns}></lightning-datatable>
                         </div>
                     </lightning-card>
                     
                 </div>
             </lightning-tab>
-            <!--Borrowed-->
+
+            <!--###Borrowed-->
             <lightning-tab label="Borrowed">
-                <div>Two Content !</div>
+                <div>
+                    <div class="search-bar">
+                        <lightning-layout>
+                            <lightning-layout-item padding="around-small">
+                                <lightning-input variant="label-hidden" placeholder="Enter User Id"
+                                    class="b-search-value"></lightning-input>
+                            </lightning-layout-item>
+                            <lightning-layout-item padding="around-small">
+                                <lightning-button label="Search" variant="brand"></lightning-button>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </div>
+                    <br/>
+                    <!--Datatable-->
+                    <lightning-card>
+                        <p slot="title"><lightning-icon icon-name="standard:knowledge" size="small"></lightning-icon> &nbsp; Borrowed Books</p>
+                        <lightning-button-group slot="actions">
+                            <lightning-button label="Return" icon-name="utility:enter"></lightning-button>
+                        </lightning-button-group>
+                        <lightning-datatable key-field="Id" data={data} columns={borrowedBooksColumns}></lightning-datatable>
+                    </lightning-card>
+                </div>
             </lightning-tab>
-            <!--Manage Books-->
-            <lightning-tab label="Manage Books">
-                <div>Manage Books !</div>
+            <!--###Add Books-->
+            <lightning-tab label="Add Books">
+                <div>Add Books !</div>
             </lightning-tab>
-            <!--User Management-->
+            <!--###User Management-->
             <lightning-tab label="User Management">
                 <div>Three Content !</div>
             </lightning-tab>

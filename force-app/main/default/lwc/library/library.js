@@ -3,17 +3,28 @@ import getBooks from '@salesforce/apex/LMSController.getBooks';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 export default class Library extends LightningElement {
     books = [];
+    isAdmin = true;
     searchByOptions = [
                 { label: 'Book Name', value: 'Book_Name__c' },
                 { label: 'Book Id', value: 'Name'},
                 { label: 'Author', value: 'Author__c' },
     ];
-    columns = [
+    booksColumns = [
         { label: 'Book Id', fieldName: 'Name' },
         { label: 'Name', fieldName: 'Book_Name__c'},
         { label: 'Author', fieldName: 'Author__c'},
-        { label: 'Description', fieldName: 'Description__c'},
         { label: 'Quantity', fieldName: 'Quantity__c'},
+        { label: 'Description', fieldName: 'Description__c'},
+    ];
+
+    borrowedBooksColumns = [
+        { label: 'User Id', fieldName: 'Name' },
+        { label: 'User Name', fieldName: 'userName' },
+        { label: 'Book', fieldName: 'bookName'},
+        { label: 'Borrow Quantity', fieldName: 'Borrow_Quantity__c'},
+        { label: 'Borrow Date', fieldName: 'Borrow_Date__c'},
+        { label: 'Return Date', fieldName: 'Return_Date__c'},
+        { label: 'Day(s) Bowrrowed', fieldName: 'daysBorrowed'},
     ];
 
     connectedCallback(){
