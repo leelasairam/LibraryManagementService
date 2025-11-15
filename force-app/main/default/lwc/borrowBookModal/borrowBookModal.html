@@ -1,0 +1,19 @@
+<template>
+    <lightning-modal-header label={title}></lightning-modal-header>
+    <lightning-modal-body>
+        <div lwc:ref="borrowForm">
+            <lightning-input label="Book" class="form-book" disabled="true" value={params.Book_Name__c}></lightning-input>
+            <lightning-input label="Borrower User Id" class="form-borroweruid" placeholder="Enter last 5 digits of user id" min-length="5" max-length="5" required="true"></lightning-input>
+            <lightning-input label="Quantity" class="form-quantity" type="number" required="true"></lightning-input>
+            <lightning-input label="Return Date" class="form-returndate" type="date" required="true"></lightning-input>
+        </div>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button label="Next" onclick={saveBorrowBook} variant="brand" style="margin-right: 0.5rem;"></lightning-button>
+        <lightning-button label="Close" onclick={handleClose}></lightning-button>
+    </lightning-modal-footer>
+
+    <template if:true={modalLoad}>
+        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+    </template>
+</template>

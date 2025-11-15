@@ -2,10 +2,10 @@
     <!--container-->
     <div class="container">
         <!--Tabs-->
-        <lightning-tabset variant="vertical">
+        <lightning-tabset variant="vertical" active-tab-value={activeTab}>
             <!--###Home-->
-            <lightning-tab label="Home">
-                <div class="home-tab" lwc:ref="bookSearch">
+            <lightning-tab label="Home" value="Home" onactive={handleTabsets} lwc:ref="homeTab">
+                <div class="home-tab">
                     <!--Search Bar-->
                     <div class="search-bar">
                         <lightning-layout>
@@ -29,7 +29,7 @@
                     <lightning-card>
                         <p slot="title"><lightning-icon icon-name="standard:article" size="small"></lightning-icon> &nbsp; Books</p>
                         <lightning-button-group slot="actions">
-                            <lightning-button label="Borrow" icon-name="utility:record_create"></lightning-button>
+                            <lightning-button label="Borrow" icon-name="utility:record_create" onclick={handleBorrowBookModal}></lightning-button>
                             <lightning-button if:true={isAdmin} label="Manage" icon-name="utility:edit_form" variant="success"></lightning-button>
                         </lightning-button-group>
                         <div style="height: 400px;">
@@ -41,7 +41,7 @@
             </lightning-tab>
 
             <!--###Borrowed-->
-            <lightning-tab label="Borrowed">
+            <lightning-tab label="Borrowed Books" value="Borrowed" onactive={handleTabsets} lwc:ref="borrowedBooksTab">
                 <div>
                     <div class="search-bar">
                         <lightning-layout>
@@ -66,14 +66,64 @@
                 </div>
             </lightning-tab>
             <!--###Add Books-->
-            <lightning-tab label="Add Books">
-                <div>Add Books !</div>
-            </lightning-tab>
+            <template if:true={isAdmin}>
+                <lightning-tab label="Add New Book" value="Add New Book" onactive={handleTabsets} lwc:ref="addNewBookTab">
+                    <lightning-card>
+                        <p slot="title"><lightning-icon icon-name="standard:article" size="small"></lightning-icon> &nbsp; New Book</p>
+                        <div lwc:ref="bookForm">
+                            <lightning-record-edit-form object-api-name="LMS_Books__c" onload={handleBookFormLoad} onsuccess={handleBookFormSuccess}>
+                                <lightning-messages> </lightning-messages>
+                                <lightning-input-field field-name="Book_Name__c"> </lightning-input-field>
+                                <div class="slds-grid">
+                                    <div class="slds-col slds-size_1-of-2">
+                                        <lightning-input-field field-name="Quantity__c"> </lightning-input-field>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-2">
+                                        <lightning-input-field field-name="Author__c"> </lightning-input-field>
+                                    </div>
+                                </div>
+                                <lightning-input-field field-name="Description__c"> </lightning-input-field>
+                                <lightning-input-field field-name="Categroy__c"> </lightning-input-field>
+                                <div class="books-form-btn">
+                                    <lightning-button class="slds-m-top_small" type="submit" label="Save" variant="brand" icon-name="utility:save"></lightning-button>
+                                    <lightning-button class="slds-m-top_small books-form-resetbtn" label="Reset" variant="destructive-text" icon-name="utility:refresh" onclick={handleBookFormReset}></lightning-button>
+                                </div>
+                            </lightning-record-edit-form>
+                        </div>
+                    </lightning-card>
+                </lightning-tab>
+            </template>
             <!--###User Management-->
-            <lightning-tab label="User Management">
-                <div>Three Content !</div>
+            <lightning-tab label="User Management" value="User Management" onactive={handleTabsets} lwc:ref="userManagementTab">
+                <div>
+                    <div class="search-bar">
+                        <lightning-layout>
+                            <lightning-layout-item padding="around-small">
+                                <lightning-input variant="label-hidden" placeholder="Enter User Id (or) Phone"
+                                    class="u-search-value"></lightning-input>
+                            </lightning-layout-item>
+                            <lightning-layout-item padding="around-small">
+                                <lightning-button label="Search" variant="brand"></lightning-button>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </div>
+                    <br/>
+                    <!--Datatable-->
+                    <lightning-card>
+                        <p slot="title"><lightning-icon icon-name="standard:user" size="small"></lightning-icon> &nbsp; Users</p>
+                        <lightning-button-group slot="actions">
+                            <lightning-button label="Manage" icon-name="utility:edit"></lightning-button>
+                        </lightning-button-group>
+                        <lightning-datatable key-field="Id" data={data} columns={userMngColumns}></lightning-datatable>
+                    </lightning-card>
+                </div>
             </lightning-tab>
             
         </lightning-tabset>
     </div>
+
+    <!--Loading-->
+    <template if:true={load}>
+        <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
+    </tempalte>
 </template>

@@ -1,12 +1,16 @@
-import { LightningElement,track,wire,api } from 'lwc';
+import { LightningElement,track } from 'lwc';
 import getBooks from '@salesforce/apex/LMSController.getBooks';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import BorrowBookModal from 'c/borrowBookModal';
 export default class Library extends LightningElement {
     books = [];
     isAdmin = true;
+    @track activeTab = 'Home'; 
+    load = false;
+    isBookFormLoaded = false;
     searchByOptions = [
-                { label: 'Book Name', value: 'Book_Name__c' },
                 { label: 'Book Id', value: 'Name'},
+                { label: 'Book Name', value: 'Book_Name__c' },
                 { label: 'Author', value: 'Author__c' },
     ];
     booksColumns = [
@@ -27,6 +31,14 @@ export default class Library extends LightningElement {
         { label: 'Day(s) Bowrrowed', fieldName: 'daysBorrowed'},
     ];
 
+    userMngColumns = [
+        { label: 'User Id', fieldName: 'Name' },
+        { label: 'Name', fieldName: 'User_Name__c' },
+        { label: 'Phone', fieldName: 'Phone__c'},
+        { label: 'Email', fieldName: 'Email__c'},
+        { label: 'Govt Id', fieldName: 'Govt_Id__c'},
+    ]
+
     connectedCallback(){
         this.fetchBooks(false,null,null);
     }
@@ -40,7 +52,20 @@ export default class Library extends LightningElement {
         this.dispatchEvent(evt);
     }
 
+    handleTabsets(event){
+        this.activeTab = event.target.value;
+        if(this.activeTab === 'Home'){}
+        else if(this.activeTab === 'Borrowed'){}
+        else if(this.activeTab === 'Add New Book'){
+            if(!this.isBookFormLoaded){
+                this.load = true;
+            }
+        }
+        else if(this.activeTab === 'User Management'){}
+    }
+
     fetchBooks(isBookSearch,field,value){
+        this.load = true;
         getBooks({searchField:field,keyWord:value,isSearch:isBookSearch})
         .then(result=>{
             this.books = result;
@@ -48,10 +73,13 @@ export default class Library extends LightningElement {
         .catch(error=>{
             console.log(error);
         })
+        .finally(()=>{
+            this.load = false;
+        })
     }
 
     handleSearch(){
-        const container = this.refs.bookSearch;
+        const container = this.refs.homeTab;
         const field = container.querySelector('.search-field').value;
         const value = container.querySelector('.search-value').value;
         if(field && value){
@@ -65,5 +93,50 @@ export default class Library extends LightningElement {
 
     resetResult(){
         this.fetchBooks(false,null,null);
+    }
+
+    handleBookFormReset() {
+        const container = this.refs.bookForm;
+        const inputFields = container.querySelectorAll('lightning-input-field');
+        if (inputFields) {
+            inputFields.forEach(field => {
+                field.reset();
+            });
+        }
+    }
+
+    handleBookFormLoad(){
+        this.load = false;
+        this.isBookFormLoaded = true;
+    }
+
+    handleBookFormSuccess(event){
+        const bookId = event.detail.id;
+        this.toast('Success',`Book ${bookId} created successfully`,'success');
+        this.handleBookFormReset();
+        const scrollOptions = {
+            left: 0,
+            top: 0,
+            behavior: 'smooth'
+        }
+        window.scrollTo(scrollOptions);
+    }
+
+    async handleBorrowBookModal() {
+        const container = this.refs.homeTab;
+        const selectedRecords =  container.querySelector("lightning-datatable").getSelectedRows();
+        //console.log(selectedRecords.length, JSON.stringify(selectedRecords));
+        if(selectedRecords.length > 0 && selectedRecords.length === 1){
+            const record = selectedRecords[0];
+            const result = await BorrowBookModal.open({
+                size: 'medium',
+                title: 'Borrow Book',
+                params : record,
+            });
+            console.log(result);
+        }
+        else{
+            this.toast('Error','Please select one row','error');
+        }
     }
 }

@@ -16,3 +16,12 @@
     border-radius: 5px;
     padding: 8px;
 }
+
+.books-form-btn{
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.books-form-resetbtn{
+    margin-left: 0.5rem;
+}
