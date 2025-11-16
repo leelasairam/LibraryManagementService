@@ -38,7 +38,7 @@ export default class BorrowBookModal extends LightningModal {
                 const result = await LightningConfirm.open({
                     message: `${borrowerDetails.User_Name__c}[${borrowerDetails.Name}] \n\n borrowing "${this.params.Book_Name__c}" book of qunatity ${quantity}.`,
                     variant: 'header',
-                    label: 'Validate User Deails',
+                    label: 'Validate User Details',
                     theme: 'warning'
                 });
 

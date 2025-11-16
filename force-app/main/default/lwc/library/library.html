@@ -30,7 +30,7 @@
                         <p slot="title"><lightning-icon icon-name="standard:article" size="small"></lightning-icon> &nbsp; Books</p>
                         <lightning-button-group slot="actions">
                             <lightning-button label="Borrow" icon-name="utility:record_create" onclick={handleBorrowBookModal}></lightning-button>
-                            <lightning-button if:true={isAdmin} label="Manage" icon-name="utility:edit_form" variant="success"></lightning-button>
+                            <lightning-button if:true={isAdmin} label="Manage" icon-name="utility:edit_form"></lightning-button>
                         </lightning-button-group>
                         <div style="height: 400px;">
                             <lightning-datatable key-field="Id" data={books} columns={booksColumns}></lightning-datatable>

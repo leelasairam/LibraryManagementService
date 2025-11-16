@@ -28,7 +28,7 @@ export default class Library extends LightningElement {
         { label: 'Borrow Quantity', fieldName: 'Borrow_Quantity__c'},
         { label: 'Borrow Date', fieldName: 'Borrow_Date__c'},
         { label: 'Return Date', fieldName: 'Return_Date__c'},
-        { label: 'Day(s) Bowrrowed', fieldName: 'daysBorrowed'},
+        { label: 'Over Due Day(s)', fieldName: 'overDueDays'},
     ];
 
     userMngColumns = [
