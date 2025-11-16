@@ -56,5 +56,68 @@ public class LMSController {
         }
         return returnText;
     }
+    
+    @AuraEnabled(cacheable=true)
+    public static list<LMS_Borrowed_Books__c>getBorrowedBooks(string keyWord,Boolean isSearch){
+        list<LMS_Borrowed_Books__c>borrowedBooks = new list<LMS_Borrowed_Books__c>();
+        if(isSearch && keyWord != '' && keyWord != null){
+            String q = 'SELECT Id,Name,Book__c,Book__r.Book_Name__c,Borrow_Date__c,Borrow_Quantity__c,Borrower__c,Borrower__r.User_Name__c,Return_Date__c,Actual_Return_Date__c FROM LMS_Borrowed_Books__c WHERE NAME ' +  'LIKE '+'\'%'+keyWord+'%\' AND Actual_Return_Date__c = null';
+            system.debug('query '+q);
+            borrowedBooks = database.query(q);
+        }
+        else if(isSearch && keyWord==''){
+            borrowedBooks = [SELECT Id,Name,Book__c,Book__r.Book_Name__c,Borrow_Date__c,Borrow_Quantity__c,Borrower__c,Borrower__r.User_Name__c,Return_Date__c,Actual_Return_Date__c FROM LMS_Borrowed_Books__c WHERE Actual_Return_Date__c = null Order By LastModifiedDate DESC LIMIT 20];
+        }
+        else{
+            borrowedBooks = [SELECT Id,Name,Book__c,Book__r.Book_Name__c,Borrow_Date__c,Borrow_Quantity__c,Borrower__c,Borrower__r.User_Name__c,Return_Date__c,Actual_Return_Date__c FROM LMS_Borrowed_Books__c WHERE Actual_Return_Date__c = null Order By LastModifiedDate DESC LIMIT 20];
+        }
+        return borrowedBooks;
+    }
+    
+    @AuraEnabled
+    public static void returnBook(list<Id> borrowIds){
+        set<Id>returnBooks = new set<Id>();
+        map<Id,decimal>returnBookCount = new map<Id,decimal>();
+        list<LMS_Books__c>booksToProcess = new list<LMS_Books__c>();
+        list<LMS_Borrowed_Books__c>borrowBookDetails = [SELECT Id,Name,Book__c,Borrow_Date__c,Borrow_Quantity__c,Borrower__c,Return_Date__c,Actual_Return_Date__c FROM LMS_Borrowed_Books__c WHERE Id IN :borrowIds];
+        for(LMS_Borrowed_Books__c borrowBook : borrowBookDetails){
+            returnBooks.add(borrowBook.Book__c);
+            if(!returnBookCount.containsKey(borrowBook.Book__c)){
+                returnBookCount.put(borrowBook.Book__c,borrowBook.Borrow_Quantity__c);
+            }
+            else{
+                Decimal quantity = returnBookCount.get(borrowBook.Book__c) + borrowBook.Borrow_Quantity__c;
+                returnBookCount.put(borrowBook.Book__c,quantity);
+            }
+        }
+        
+        for(Id bookId : returnBooks){
+            LMS_Books__c book = new LMS_Books__c();
+            book.Id = bookId;
+            book.Quantity__c = returnBookCount.get(bookId);
+            booksToProcess.add(book);
+        }
+        
+        if(!booksToProcess.isEmpty()){
+            try{
+                update booksToProcess;
+            }
+            catch(Exception e){
+                throw new AuraHandledException(e.getMessage());
+            }
+        }
+        
+        for(LMS_Borrowed_Books__c bBook : borrowBookDetails){
+            bBook.Actual_Return_Date__c = system.today();
+        }
+        
+        try{
+           update borrowBookDetails;
+        }
+        catch(Exception e){
+            throw new AuraHandledException(e.getMessage());
+        }
+        
+    }
 
 }

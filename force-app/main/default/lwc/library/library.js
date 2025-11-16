@@ -1,9 +1,12 @@
 import { LightningElement,track } from 'lwc';
 import getBooks from '@salesforce/apex/LMSController.getBooks';
+import getBorrowedBooks from '@salesforce/apex/LMSController.getBorrowedBooks';
+import returnBook from '@salesforce/apex/LMSController.returnBook';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import BorrowBookModal from 'c/borrowBookModal';
 export default class Library extends LightningElement {
-    books = [];
+    @track books = [];
+    @track borrowedBooks = [];
     isAdmin = true;
     @track activeTab = 'Home'; 
     load = false;
@@ -55,7 +58,9 @@ export default class Library extends LightningElement {
     handleTabsets(event){
         this.activeTab = event.target.value;
         if(this.activeTab === 'Home'){}
-        else if(this.activeTab === 'Borrowed'){}
+        else if(this.activeTab === 'Borrowed'){
+            this.fetchBorrowedBooks();
+        }
         else if(this.activeTab === 'Add New Book'){
             if(!this.isBookFormLoaded){
                 this.load = true;
@@ -137,6 +142,39 @@ export default class Library extends LightningElement {
         }
         else{
             this.toast('Error','Please select one row','error');
+        }
+    }
+
+    async fetchBorrowedBooks(){
+        this.load = true;
+        await getBorrowedBooks({keyWord : null,isSearch:false})
+        .then(result=>{
+            this.borrowedBooks = result.map(book => ({...book,userName:book.Borrower__r.User_Name__c,bookName:book.Book__r.Book_Name__c,overDueDays:this.getOverDueDays(book.Return_Date__c)}));
+        })
+        .catch(error=>{
+            this.toast('Error',error,'error');
+        })
+        .finally(()=>{
+            this.load = false;
+        })
+    }
+
+    getOverDueDays(returnDate){
+        const today = new Date();
+        const otherDate = new Date(returnDate);
+
+        today.setHours(0, 0, 0, 0);
+        otherDate.setHours(0, 0, 0, 0);
+
+        const differenceInMs = otherDate.getTime() - today.getTime();
+
+        const msInADay = 1000 * 60 * 60 * 24;
+        const daysDifference = Math.floor(differenceInMs / msInADay);
+        if(daysDifference>=0){
+            return 0;
+        }
+        else{
+            return Number(daysDifference.toString().replace("-", ""));
         }
     }
 }
