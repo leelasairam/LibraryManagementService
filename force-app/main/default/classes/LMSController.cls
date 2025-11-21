@@ -13,16 +13,11 @@ public class LMSController {
         return books;
     }
     
-    @AuraEnabled(cacheable=true)
-    public static LMS_Users__c getLMSUserDetails(String uid){
-        LMS_Users__c userDetails = [SELECT Id,Name,User_Name__c,Phone__c FROM LMS_Users__c WHERE Name =:uid LIMIT 1];
-        return userDetails;
-    }
-    
     @AuraEnabled 
-	public static String createBorrowRequest(Id borrowerId, String borrowerUID, Decimal quantity, Date returnDate,Id bookId){
+	public static String createBorrowRequest(Id borrowerId, Decimal quantity, Date returnDate,Id bookId){
         String returnText = '';
         LMS_Books__c bookDetails = [SELECT Id,Name,Book_Name__c,Quantity__c FROM LMS_Books__c WHERE Id = :bookId LIMIT 1];
+        String borrowerUID = [SELECT Id,Name FROM LMS_Users__c WHERE Id =:borrowerId LIMIT 1].Name;
         Decimal bookQunatity = bookDetails.Quantity__c;
         if(bookQunatity < quantity){
             if(bookQunatity == 0){
@@ -79,7 +74,10 @@ public class LMSController {
         set<Id>returnBooks = new set<Id>();
         map<Id,decimal>returnBookCount = new map<Id,decimal>();
         list<LMS_Books__c>booksToProcess = new list<LMS_Books__c>();
-        list<LMS_Borrowed_Books__c>borrowBookDetails = [SELECT Id,Name,Book__c,Borrow_Date__c,Borrow_Quantity__c,Borrower__c,Return_Date__c,Actual_Return_Date__c FROM LMS_Borrowed_Books__c WHERE Id IN :borrowIds];
+        list<LMS_Borrowed_Books__c>borrowBookDetails = [SELECT Id,Name,Book__c,Borrow_Date__c,Borrow_Quantity__c,Borrower__c,Return_Date__c,Actual_Return_Date__c FROM LMS_Borrowed_Books__c WHERE Id IN :borrowIds AND Actual_Return_Date__c=null];
+        if(borrowBookDetails.isEmpty()){
+            throw new AuraHandledException('Selected row(s) either already retured or not available');
+        }
         for(LMS_Borrowed_Books__c borrowBook : borrowBookDetails){
             returnBooks.add(borrowBook.Book__c);
             if(!returnBookCount.containsKey(borrowBook.Book__c)){
@@ -91,11 +89,9 @@ public class LMSController {
             }
         }
         
-        for(Id bookId : returnBooks){
-            LMS_Books__c book = new LMS_Books__c();
-            book.Id = bookId;
-            book.Quantity__c = returnBookCount.get(bookId);
-            booksToProcess.add(book);
+        booksToProcess = [SELECT Id,Quantity__c FROM LMS_Books__c WHERE Id IN :returnBooks];
+        for(LMS_Books__c book : booksToProcess){
+            book.Quantity__c += returnBookCount.get(book.Id);
         }
         
         if(!booksToProcess.isEmpty()){

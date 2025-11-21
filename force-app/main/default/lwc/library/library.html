@@ -59,7 +59,7 @@
                     <lightning-card>
                         <p slot="title"><lightning-icon icon-name="standard:knowledge" size="small"></lightning-icon> &nbsp; Borrowed Books</p>
                         <lightning-button-group slot="actions">
-                            <lightning-button label="Return" icon-name="utility:enter"></lightning-button>
+                            <lightning-button label="Return" icon-name="utility:enter" onclick={processRuturn}></lightning-button>
                         </lightning-button-group>
                         <lightning-datatable key-field="Id" data={borrowedBooks} columns={borrowedBooksColumns}></lightning-datatable>
                     </lightning-card>

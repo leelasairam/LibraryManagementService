@@ -177,4 +177,28 @@ export default class Library extends LightningElement {
             return Number(daysDifference.toString().replace("-", ""));
         }
     }
+
+    processRuturn(){
+        const container = this.refs.borrowedBooksTab;
+        const selectedRecords =  container.querySelector("lightning-datatable").getSelectedRows();
+        if(selectedRecords.length>0){
+            this.load = true;
+            const selectedRecordIds = selectedRecords.map(rec=>(rec.Id));
+            console.log(JSON.stringify(selectedRecordIds));
+            returnBook({borrowIds:selectedRecordIds})
+            .then(result=>{
+                this.toast('Success','Returned successfully','success');
+            })
+            .catch(error=>{
+                console.log(error);
+                this.toast('Error',error.body.message,'error');
+            })
+            .finally(()=>{
+                this.load = false;
+            })
+        }
+        else{
+            this.toast('Error','Please select atleast one row','error');
+        }
+    }
 }
