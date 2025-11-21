@@ -1,5 +1,5 @@
 public class LMSController {
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static list<LMS_Books__c>getBooks(string searchField,string keyWord,Boolean isSearch){
         list<LMS_Books__c>books = new list<LMS_Books__c>();
         if(searchField!=null && keyWord!=null && isSearch){
@@ -29,7 +29,7 @@ public class LMSController {
         }
         else{
             LMS_Borrowed_Books__c BR = new LMS_Borrowed_Books__c();
-            BR.Name = borrowerUID;
+            BR.Name = borrowerUID.substringAfter('-')+'_'+DateTime.now().formatGMT('yyyyMMddHHmmss');
             BR.Borrower__c = borrowerId;
             BR.Book__c = bookId;
             BR.Borrow_Date__c = system.today();
@@ -52,7 +52,7 @@ public class LMSController {
         return returnText;
     }
     
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static list<LMS_Borrowed_Books__c>getBorrowedBooks(string keyWord,Boolean isSearch){
         list<LMS_Borrowed_Books__c>borrowedBooks = new list<LMS_Borrowed_Books__c>();
         if(isSearch && keyWord != '' && keyWord != null){

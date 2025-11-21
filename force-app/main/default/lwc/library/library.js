@@ -25,7 +25,7 @@ export default class Library extends LightningElement {
     ];
 
     borrowedBooksColumns = [
-        { label: 'User Id', fieldName: 'Name' },
+        { label: 'Order Id', fieldName: 'Name' },
         { label: 'User Name', fieldName: 'userName' },
         { label: 'Book', fieldName: 'bookName'},
         { label: 'Borrow Quantity', fieldName: 'Borrow_Quantity__c'},
@@ -42,9 +42,9 @@ export default class Library extends LightningElement {
         { label: 'Govt Id', fieldName: 'Govt_Id__c'},
     ]
 
-    connectedCallback(){
+    /*connectedCallback(){
         this.fetchBooks(false,null,null);
-    }
+    }*/
 
     toast(title,msg,variant){
         const evt = new ShowToastEvent({
@@ -57,7 +57,9 @@ export default class Library extends LightningElement {
 
     handleTabsets(event){
         this.activeTab = event.target.value;
-        if(this.activeTab === 'Home'){}
+        if(this.activeTab === 'Home'){
+            this.fetchBooks(false,null,null);
+        }
         else if(this.activeTab === 'Borrowed'){
             this.fetchBorrowedBooks();
         }
@@ -138,6 +140,9 @@ export default class Library extends LightningElement {
                 title: 'Borrow Book',
                 params : record,
             });
+            if(result === 'success'){
+                this.fetchBooks(false,null,null);
+            }
             console.log(result);
         }
         else{
@@ -195,6 +200,7 @@ export default class Library extends LightningElement {
             })
             .finally(()=>{
                 this.load = false;
+                this.fetchBorrowedBooks();
             })
         }
         else{

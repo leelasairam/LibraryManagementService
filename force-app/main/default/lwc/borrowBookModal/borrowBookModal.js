@@ -8,7 +8,7 @@ export default class BorrowBookModal extends LightningModal {
     modalLoad = false;
 
     handleClose() {
-        this.close('done');
+        this.close('close');
     }
 
     toast(title,msg,variant){
@@ -59,7 +59,7 @@ export default class BorrowBookModal extends LightningModal {
                 //Response '' indicates success of DML
                 if(res1===''){
                     this.toast('Success','Book borrowed successfully','success');
-                    this.close('done');
+                    this.close('success');
                 }
                 else{
                     this.toast('Error',res1,'error');
