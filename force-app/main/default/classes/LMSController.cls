@@ -115,5 +115,25 @@ public class LMSController {
         }
         
     }
-
+    
+    @AuraEnabled
+    public static list<LMS_Users__c>getUsers(String keyWord){
+        Boolean isSearch = (keyWord!=null && keyWord!='');
+        list<LMS_Users__c>users = new list<LMS_Users__c>();
+        if(isSearch){
+            String q;
+            Integer keyWordLen = keyWord.length();
+            if(keyWordLen>7 && (keyWordLen==10 || keyWordLen==12)){
+                q = 'SELECT Id,Name,User_Name__c,Phone__c,Email__c,Govt_Id__c,Active__c FROM LMS_Users__c WHERE Phone__c = \''+keyWord+'\'';
+            }
+            else{
+                q = 'SELECT Id,Name,User_Name__c,Phone__c,Email__c,Govt_Id__c,Active__c FROM LMS_Users__c WHERE NAME LIKE \'%'+keyWord+'%\'';
+            }
+            users = database.query(q);
+        }
+        else{
+            users = [SELECT Id,Name,User_Name__c,Phone__c,Email__c,Govt_Id__c,Active__c FROM LMS_Users__c Order By LastModifiedDate DESC LIMIT 20];
+        }
+        return users;
+    }
 }

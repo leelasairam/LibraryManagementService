@@ -61,7 +61,9 @@
                         <lightning-button-group slot="actions">
                             <lightning-button label="Return" icon-name="utility:enter" onclick={processRuturn}></lightning-button>
                         </lightning-button-group>
-                        <lightning-datatable key-field="Id" data={borrowedBooks} columns={borrowedBooksColumns}></lightning-datatable>
+                        <div style="height: 400px;">
+                            <lightning-datatable key-field="Id" data={borrowedBooks} columns={borrowedBooksColumns}></lightning-datatable>
+                        </div>
                     </lightning-card>
                 </div>
             </lightning-tab>
@@ -103,7 +105,7 @@
                                     class="u-search-value"></lightning-input>
                             </lightning-layout-item>
                             <lightning-layout-item padding="around-small">
-                                <lightning-button label="Search" variant="brand"></lightning-button>
+                                <lightning-button label="Search" variant="brand" onclick={searchUser}></lightning-button>
                             </lightning-layout-item>
                         </lightning-layout>
                     </div>
@@ -114,7 +116,9 @@
                         <lightning-button-group slot="actions">
                             <lightning-button label="Manage" icon-name="utility:edit"></lightning-button>
                         </lightning-button-group>
-                        <lightning-datatable key-field="Id" data={data} columns={userMngColumns}></lightning-datatable>
+                        <div style="height: 400px;">
+                            <lightning-datatable key-field="Id" data={lmsUsers} columns={userMngColumns}></lightning-datatable>
+                        </div>
                     </lightning-card>
                 </div>
             </lightning-tab>

@@ -1,12 +1,15 @@
 import { LightningElement,track } from 'lwc';
 import getBooks from '@salesforce/apex/LMSController.getBooks';
 import getBorrowedBooks from '@salesforce/apex/LMSController.getBorrowedBooks';
+import getUsers from '@salesforce/apex/LMSController.getUsers';
 import returnBook from '@salesforce/apex/LMSController.returnBook';
+import {getOverDueDays} from './libraryHelper';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import BorrowBookModal from 'c/borrowBookModal';
 export default class Library extends LightningElement {
     @track books = [];
     @track borrowedBooks = [];
+    @track lmsUsers = [];
     isAdmin = true;
     @track activeTab = 'Home'; 
     load = false;
@@ -25,7 +28,7 @@ export default class Library extends LightningElement {
     ];
 
     borrowedBooksColumns = [
-        { label: 'Order Id', fieldName: 'Name' },
+        { label: 'Order Id', fieldName: 'Id' },
         { label: 'User Name', fieldName: 'userName' },
         { label: 'Book', fieldName: 'bookName'},
         { label: 'Borrow Quantity', fieldName: 'Borrow_Quantity__c'},
@@ -68,7 +71,9 @@ export default class Library extends LightningElement {
                 this.load = true;
             }
         }
-        else if(this.activeTab === 'User Management'){}
+        else if(this.activeTab === 'User Management'){
+            this.fetchUsers(null);
+        }
     }
 
     fetchBooks(isBookSearch,field,value){
@@ -154,7 +159,7 @@ export default class Library extends LightningElement {
         this.load = true;
         await getBorrowedBooks({keyWord : null,isSearch:false})
         .then(result=>{
-            this.borrowedBooks = result.map(book => ({...book,userName:book.Borrower__r.User_Name__c,bookName:book.Book__r.Book_Name__c,overDueDays:this.getOverDueDays(book.Return_Date__c)}));
+            this.borrowedBooks = result.map(book => ({...book,userName:book.Borrower__r.User_Name__c,bookName:book.Book__r.Book_Name__c,overDueDays:getOverDueDays(book.Return_Date__c)}));
         })
         .catch(error=>{
             this.toast('Error',error,'error');
@@ -164,7 +169,7 @@ export default class Library extends LightningElement {
         })
     }
 
-    getOverDueDays(returnDate){
+    /*getOverDueDays(returnDate){
         const today = new Date();
         const otherDate = new Date(returnDate);
 
@@ -181,7 +186,7 @@ export default class Library extends LightningElement {
         else{
             return Number(daysDifference.toString().replace("-", ""));
         }
-    }
+    }*/
 
     processRuturn(){
         const container = this.refs.borrowedBooksTab;
@@ -206,5 +211,36 @@ export default class Library extends LightningElement {
         else{
             this.toast('Error','Please select atleast one row','error');
         }
+    }
+
+    searchUser(){
+        const container = this.refs.userManagementTab;
+        const keyWord = container.querySelector('.u-search-value').value;
+        const keyWordLen = keyWord.length;
+        if(keyWord=='' && keyWordLen == 0){
+            this.fetchUsers(null);
+        }
+        else{
+            if(keyWordLen>0 && (keyWordLen == 5 || keyWordLen == 7 || keyWordLen == 10 || keyWordLen == 12)){
+                this.fetchUsers(keyWord);
+            }
+            else{
+                this.toast('Error','Enter valid User Id or Phone Number','error');
+            }
+        }
+    }
+
+    fetchUsers(searchTerm){
+        this.load = true;
+        getUsers({keyWord:searchTerm})
+        .then(result=>{
+            this.lmsUsers = result;
+        })
+        .catch(error=>{
+            console.log(error);
+        })
+        .finally(()=>{
+            this.load = false;
+        })
     }
 }
