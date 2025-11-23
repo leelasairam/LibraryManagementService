@@ -136,4 +136,39 @@ public class LMSController {
         }
         return users;
     }
+    
+    @AuraEnabled(cacheable=true)
+    public static map<string,string> getFields(String objectApiName){
+        map<string,string>fieldsToReturn = new map<string,string>();
+        set<string>sobjectsList = new set<string>();
+        
+        if(objectApiName == 'LMS_Borrowed_Books__c'){
+            sobjectsList.add(objectApiName);
+            sobjectsList.add('LMS_Books__c');
+            sobjectsList.add('LMS_Users__c');
+        }
+        else{
+            sobjectsList.add(objectApiName);
+        }
+        
+        for(string obj : sobjectsList){
+            Schema.SObjectType objType = Schema.getGlobalDescribe().get(obj);
+            String objectLabel = objType.getDescribe().getLabel();
+    		Schema.DescribeSObjectResult describe = objType.getDescribe();
+            Map<String, Schema.SObjectField> fields = describe.fields.getMap();
+            for (String apiName : fields.keySet()) {
+                Schema.DescribeFieldResult fld = fields.get(apiName).getDescribe();
+                if(obj == objectApiName){
+                    fieldsToReturn.put(apiName, fld.getLabel());
+                    if(apiName == 'OwnerId' || apiName == 'CreatedById' || apiName == 'LastModifiedById'){
+                        fieldsToReturn.put(apiName.replace('Id','.Name'), fld.getLabel()+'> Name');
+                    }
+                }
+                else{
+                    fieldsToReturn.put(obj.replace('__c','__r.')+apiName,objectLabel+'>'+fld.getLabel());
+                }
+            }
+        }
+        return fieldsToReturn;
+    }
 }
