@@ -3,6 +3,7 @@ import getBooks from '@salesforce/apex/LMSController.getBooks';
 import getBorrowedBooks from '@salesforce/apex/LMSController.getBorrowedBooks';
 import getUsers from '@salesforce/apex/LMSController.getUsers';
 import returnBook from '@salesforce/apex/LMSController.returnBook';
+import getFields from '@salesforce/apex/LMSController.getFields';
 import {getOverDueDays} from './libraryHelper';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import BorrowBookModal from 'c/borrowBookModal';
@@ -45,6 +46,21 @@ export default class Library extends LightningElement {
         { label: 'Govt Id', fieldName: 'Govt_Id__c'},
     ]
 
+    objectAPINames = [
+        { label: 'Books', value: 'LMS_Books__c' },
+        { label: 'Borrowed Books', value: 'LMS_Borrowed_Books__c' },
+        { label: 'LMS Users', value: 'LMS_Users__c' },
+    ];
+
+    @track objFields = [];
+    filterCounter = 1;
+    @track filterCounterList = [{Id:1,Field:'',Operation:'',Value:''}];
+    operations = [
+        { label: 'Equal', value: '=' },
+        { label: 'Not Equal', value: '!=' },
+        { label: 'Contains', value: 'LIKE' },
+    ]
+
     /*connectedCallback(){
         this.fetchBooks(false,null,null);
     }*/
@@ -73,6 +89,9 @@ export default class Library extends LightningElement {
         }
         else if(this.activeTab === 'User Management'){
             this.fetchUsers(null);
+        }
+        else if(this.activeTab === 'Quick Reports'){
+            
         }
     }
 
@@ -242,5 +261,24 @@ export default class Library extends LightningElement {
         .finally(()=>{
             this.load = false;
         })
+    }
+
+    fetchObjFields(event){
+        const obj = event.target.value;
+        const fields = [];
+        getFields({objectApiName:obj})
+        .then(result=>{
+            for (const [fieldAPIName, fieldLabel] of Object.entries(result)) {
+                fields.push({label:fieldLabel,value:fieldAPIName});
+            }
+            this.objFields = fields;
+        })
+        .catch(error=>{
+            console.log(error);
+        })
+    }
+
+    addFilterRow(){
+        this.filterCounterList.push({Id:++this.filterCounter,Field:'',Operation:'',Value:''});
     }
 }

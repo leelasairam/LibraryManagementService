@@ -122,7 +122,42 @@
                     </lightning-card>
                 </div>
             </lightning-tab>
-            
+
+            <!--###Quick Reports-->
+            <lightning-tab label="Quick Reports" value="Quick Reports" onactive={handleTabsets} lwc:ref="quickReports">
+                <lightning-combobox label="Object" placeholder="Select Object" options={objectAPINames} onchange={fetchObjFields} ></lightning-combobox>
+                <br/>
+                <lightning-dual-listbox 
+                                label="Select fields to dispaly"
+                                source-label="Available"
+                                selected-label="Selected"
+                                options={objFields}>
+                </lightning-dual-listbox>
+                <br/>
+                <lightning-card title="Filters">
+                    <lightning-button label="Add Filter Row" onclick={addFilterRow} slot="actions"></lightning-button>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>Field</th>
+                                <th>Opertation</th>
+                                <th>Value</th>
+                            </tr> 
+                            <template for:each={filterCounterList} for:item="i">
+                                <tr key={i.Id}>
+                                    <td><lightning-combobox variant="label-hidden" label="Fields" placeholder="Select Field" options={objFields} ></lightning-combobox></td>
+                                    <td><lightning-combobox variant="label-hidden" label="Operation" placeholder="Select Operation" options={operations} ></lightning-combobox></td>
+                                    <td><lightning-input variant="label-hidden" label="Value" placeholder="Enter Value"></lightning-input></td>
+                                    <td><lightning-button-icon icon-name="utility:close" class="slds-p-vertical_medium"></lightning-button-icon></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    <br/>
+                    <lightning-input label="Custom Logic" placeholder="1 AND (2 OR 3) AND 4" class="slds-p-around_small"></lightning-input>
+                </lightning-card>
+
+            </lightning-tab>
         </lightning-tabset>
     </div>
 
