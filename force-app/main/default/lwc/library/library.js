@@ -3,10 +3,10 @@ import getBooks from '@salesforce/apex/LMSController.getBooks';
 import getBorrowedBooks from '@salesforce/apex/LMSController.getBorrowedBooks';
 import getUsers from '@salesforce/apex/LMSController.getUsers';
 import returnBook from '@salesforce/apex/LMSController.returnBook';
-import getFields from '@salesforce/apex/LMSController.getFields';
 import {getOverDueDays} from './libraryHelper';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import BorrowBookModal from 'c/borrowBookModal';
+import lmsNewOrEditReport from 'c/lmsNewOrEditReport';
 export default class Library extends LightningElement {
     @track books = [];
     @track borrowedBooks = [];
@@ -44,21 +44,6 @@ export default class Library extends LightningElement {
         { label: 'Phone', fieldName: 'Phone__c'},
         { label: 'Email', fieldName: 'Email__c'},
         { label: 'Govt Id', fieldName: 'Govt_Id__c'},
-    ]
-
-    objectAPINames = [
-        { label: 'Books', value: 'LMS_Books__c' },
-        { label: 'Borrowed Books', value: 'LMS_Borrowed_Books__c' },
-        { label: 'LMS Users', value: 'LMS_Users__c' },
-    ];
-
-    @track objFields = [];
-    filterCounter = 1;
-    @track filterCounterList = [{Id:1,Field:'',Operation:'',Value:''}];
-    operations = [
-        { label: 'Equal', value: '=' },
-        { label: 'Not Equal', value: '!=' },
-        { label: 'Contains', value: 'LIKE' },
     ]
 
     /*connectedCallback(){
@@ -263,22 +248,19 @@ export default class Library extends LightningElement {
         })
     }
 
-    fetchObjFields(event){
-        const obj = event.target.value;
-        const fields = [];
-        getFields({objectApiName:obj})
-        .then(result=>{
-            for (const [fieldAPIName, fieldLabel] of Object.entries(result)) {
-                fields.push({label:fieldLabel,value:fieldAPIName});
-            }
-            this.objFields = fields;
-        })
-        .catch(error=>{
-            console.log(error);
-        })
-    }
-
-    addFilterRow(){
-        this.filterCounterList.push({Id:++this.filterCounter,Field:'',Operation:'',Value:''});
+    async modifyReportModal(event){
+        const btn = event.target.name;
+        const isNewModal = btn == 'New' ? true : false;
+        const result = await lmsNewOrEditReport.open({
+            size: 'medium',
+            title: isNewModal ? 'New Report' : 'Edit Report',
+            filterCounterList : isNewModal ? null : null,
+            displayFields:isNewModal ? null : null,
+            isNew : isNewModal ? true : false,
+        });
+        if(result === 'success'){
+            
+        }
+        console.log(result);
     }
 }

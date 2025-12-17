@@ -1,0 +1,52 @@
+<template>
+    <!--Header-->
+    <lightning-modal-header label={title}></lightning-modal-header>
+    <!--Body-->
+    <lightning-modal-body>
+        <lightning-input label="Report Name" required="true" max-length="120"></lightning-input>
+        <lightning-combobox label="Object" placeholder="Select Object" options={objectAPINames} onchange={fetchObjFields} ></lightning-combobox>
+        <br/>
+        <lightning-dual-listbox 
+                        label="Select fields to dispaly"
+                        source-label="Available"
+                        selected-label="Selected"
+                        options={objFields}>
+        </lightning-dual-listbox>
+        <br/>
+        <lightning-card>
+            <p slot="title"><lightning-icon icon-name="utility:filterList" size="small"></lightning-icon> &nbsp; Filters</p>
+            <lightning-button label="Add Filter Row" onclick={addFilterRow} slot="actions" variant="success"></lightning-button>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Field</th>
+                        <th>Opertation</th>
+                        <th>Value</th>
+                    </tr> 
+                    <template for:each={filterCounterList} for:item="i">
+                        <tr key={i.Id}>
+                            <td><lightning-combobox variant="label-hidden" label="Fields" placeholder="Select Field" options={objFields} data-id={i.Id} name="Field" onchange={handleInpChanges}></lightning-combobox></td>
+                            <td><lightning-combobox variant="label-hidden" label="Operation" placeholder="Select Operation" options={operations} data-id={i.Id} name="Operation" onchange={handleInpChanges}></lightning-combobox></td>
+                            <td><lightning-input variant="label-hidden" label="Value" placeholder="Enter Value" data-id={i.Id} name="Value" onchange={handleInpChanges}></lightning-input></td>
+                            <td><lightning-button-icon icon-name="utility:close" class="slds-p-vertical_medium" data-id={i.Id} onclick={removeRow}></lightning-button-icon></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+            <br/>
+            <lightning-layout>
+                <lightning-layout-item padding="around-small" size="6">
+                    <lightning-input label="Filter Custom Logic" placeholder="1 AND (2 OR 3) AND 4"></lightning-input>
+                </lightning-layout-item>
+                <lightning-layout-item padding="around-small" size="6">
+                    <lightning-combobox label="Sort By" options={objFields}></lightning-combobox>
+                </lightning-layout-item>
+            </lightning-layout>
+        </lightning-card>
+    </lightning-modal-body>
+    <!--Footer-->
+    <lightning-modal-footer>
+        <lightning-button label="Save" class="margin-right" variant="brand"></lightning-button>
+        <lightning-button label="Close" onclick={handleClose} variant="destructive-text"></lightning-button>
+    </lightning-modal-footer>
+</template>
