@@ -19,12 +19,15 @@
             <table>
                 <tbody>
                     <tr>
+                        <th>Row</th>
                         <th>Field</th>
                         <th>Opertation</th>
                         <th>Value</th>
+                        <th>_Action</th>
                     </tr> 
                     <template for:each={filterCounterList} for:item="i">
                         <tr key={i.Id}>
+                            <td>{i.Id}</td>
                             <td><lightning-combobox variant="label-hidden" label="Fields" placeholder="Select Field" options={objFields} data-id={i.Id} name="Field" onchange={handleInpChanges}></lightning-combobox></td>
                             <td><lightning-combobox variant="label-hidden" label="Operation" placeholder="Select Operation" options={operations} data-id={i.Id} name="Operation" onchange={handleInpChanges}></lightning-combobox></td>
                             <td><lightning-input variant="label-hidden" label="Value" placeholder="Enter Value" data-id={i.Id} name="Value" onchange={handleInpChanges}></lightning-input></td>
@@ -34,19 +37,22 @@
                 </tbody>
             </table>
             <br/>
-            <lightning-layout>
-                <lightning-layout-item padding="around-small" size="6">
-                    <lightning-input label="Filter Custom Logic" placeholder="1 AND (2 OR 3) AND 4"></lightning-input>
+            <lightning-layout lwc:ref="customFilterOrderby">
+                <lightning-layout-item padding="around-small" size="4">
+                    <lightning-input label="Filter Custom Logic" placeholder="1 AND (2 OR 3) AND 4" class="cLogic"></lightning-input>
                 </lightning-layout-item>
-                <lightning-layout-item padding="around-small" size="6">
-                    <lightning-combobox label="Sort By" options={objFields}></lightning-combobox>
+                <lightning-layout-item padding="around-small" size="4">
+                    <lightning-combobox label="Sort By" options={objFields} class="sortBy"></lightning-combobox>
+                </lightning-layout-item>
+                <lightning-layout-item padding="around-small" size="4">
+                    <lightning-combobox label="Sorting Order" options={sortOrders} class="sortOrder"></lightning-combobox>
                 </lightning-layout-item>
             </lightning-layout>
         </lightning-card>
     </lightning-modal-body>
     <!--Footer-->
     <lightning-modal-footer>
-        <lightning-button label="Save" class="margin-right" variant="brand"></lightning-button>
+        <lightning-button label="Save" class="margin-right" variant="brand" onclick={subsituteCustomLogic}></lightning-button>
         <lightning-button label="Close" onclick={handleClose} variant="destructive-text"></lightning-button>
     </lightning-modal-footer>
 </template>
