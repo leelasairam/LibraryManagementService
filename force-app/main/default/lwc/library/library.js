@@ -254,8 +254,7 @@ export default class Library extends LightningElement {
         const result = await lmsNewOrEditReport.open({
             size: 'medium',
             title: isNewModal ? 'New Report' : 'Edit Report',
-            filterCounterList : isNewModal ? null : null,
-            displayFields:isNewModal ? null : null,
+            reportId : isNewModal ? null : null,
             isNew : isNewModal ? true : false,
         });
         if(result === 'success'){

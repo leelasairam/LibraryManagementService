@@ -138,8 +138,8 @@ public class LMSController {
     }
     
     @AuraEnabled(cacheable=true)
-    public static map<string,string> getFields(String objectApiName){
-        map<string,string>fieldsToReturn = new map<string,string>();
+    public static map<string,list<string>> getFields(String objectApiName){
+        map<string,list<string>>fieldsToReturn = new map<string,list<string>>();
         set<string>sobjectsList = new set<string>();
         
         if(objectApiName == 'LMS_Borrowed_Books__c'){
@@ -159,16 +159,44 @@ public class LMSController {
             for (String apiName : fields.keySet()) {
                 Schema.DescribeFieldResult fld = fields.get(apiName).getDescribe();
                 if(obj == objectApiName){
-                    fieldsToReturn.put(apiName, fld.getLabel());
+                    fieldsToReturn.put(apiName, new list<String>{fld.getLabel(),String.valueof(fld.getType())});
                     if(apiName == 'OwnerId' || apiName == 'CreatedById' || apiName == 'LastModifiedById'){
-                        fieldsToReturn.put(apiName.replace('Id','.Name'), fld.getLabel()+'> Name');
+                        fieldsToReturn.put(apiName.replace('id','.name'), new list<String>{fld.getLabel()+'> Name',String.valueof(fld.getType())});
                     }
                 }
                 else{
-                    fieldsToReturn.put(obj.replace('__c','__r.')+apiName,objectLabel+'>'+fld.getLabel());
+                    fieldsToReturn.put(obj.replace('__c','__r.')+apiName,new list<String>{objectLabel+'>'+fld.getLabel(),String.valueof(fld.getType())});
                 }
             }
         }
         return fieldsToReturn;
+    }
+    
+    @AuraEnabled
+    public static void upsertLMSReport(LMSReportWrapper report,Id rptId){
+        LMS_Reports__c rpt = new LMS_Reports__c();
+        rpt.Query__c = report.query;
+        rpt.Custom_Logic__c = report.customLogic;
+        rpt.Display_Fields__c = report.displayFields;
+        rpt.Filters__c = report.filters;
+        rpt.Object__c = report.ObjectName;
+        rpt.Report_Name__c = report.reportName;
+        rpt.Sorting_Order__c = report.sortOrder;
+        rpt.Sort_By__c = report.sortBy;
+        if(rptId!=null){
+            rpt.Id = rptId;   
+        }
+        upsert rpt;
+    }
+    
+    public class LMSReportWrapper{
+        @AuraEnabled public String filters { get; set; }
+        @AuraEnabled public String displayFields { get; set; }
+        @AuraEnabled public String ObjectName { get; set; }
+        @AuraEnabled public String customLogic { get; set; }
+        @AuraEnabled public String  query{ get; set; }
+        @AuraEnabled public String sortBy { get; set; }
+        @AuraEnabled public String sortOrder { get; set; }
+        @AuraEnabled public String reportName { get; set; }
     }
 }

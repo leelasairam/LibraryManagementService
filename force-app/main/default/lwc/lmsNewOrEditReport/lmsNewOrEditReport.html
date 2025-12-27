@@ -3,14 +3,16 @@
     <lightning-modal-header label={title}></lightning-modal-header>
     <!--Body-->
     <lightning-modal-body>
-        <lightning-input label="Report Name" required="true" max-length="120"></lightning-input>
+        <lightning-input label="Report Name" required="true" max-length="120" class="reportName"></lightning-input>
         <lightning-combobox label="Object" placeholder="Select Object" options={objectAPINames} onchange={fetchObjFields} ></lightning-combobox>
         <br/>
         <lightning-dual-listbox 
                         label="Select fields to dispaly"
                         source-label="Available"
                         selected-label="Selected"
-                        options={objFields}>
+                        options={objFields}
+                        onchange={processSelectedFields}
+                        value={displayFields}>
         </lightning-dual-listbox>
         <br/>
         <lightning-card>
@@ -28,9 +30,9 @@
                     <template for:each={filterCounterList} for:item="i">
                         <tr key={i.Id}>
                             <td>{i.Id}</td>
-                            <td><lightning-combobox variant="label-hidden" label="Fields" placeholder="Select Field" options={objFields} data-id={i.Id} name="Field" onchange={handleInpChanges}></lightning-combobox></td>
-                            <td><lightning-combobox variant="label-hidden" label="Operation" placeholder="Select Operation" options={operations} data-id={i.Id} name="Operation" onchange={handleInpChanges}></lightning-combobox></td>
-                            <td><lightning-input variant="label-hidden" label="Value" placeholder="Enter Value" data-id={i.Id} name="Value" onchange={handleInpChanges}></lightning-input></td>
+                            <td><lightning-combobox variant="label-hidden" label="Fields" placeholder="Select Field" options={objFields} data-id={i.Id} name="Field" onchange={handleInpChanges} value={i.Field}></lightning-combobox></td>
+                            <td><lightning-combobox variant="label-hidden" label="Operation" placeholder="Select Operation" options={operations} data-id={i.Id} name="Operation" onchange={handleInpChanges} value={i.Operation}></lightning-combobox></td>
+                            <td><lightning-input variant="label-hidden" label="Value" type={i.inpType} placeholder={i.placeholderTxt} data-id={i.Id} name="Value" onchange={handleInpChanges} value={i.Value}></lightning-input></td>
                             <td><lightning-button-icon icon-name="utility:close" class="slds-p-vertical_medium" data-id={i.Id} onclick={removeRow}></lightning-button-icon></td>
                         </tr>
                     </template>
@@ -45,7 +47,7 @@
                     <lightning-combobox label="Sort By" options={objFields} class="sortBy"></lightning-combobox>
                 </lightning-layout-item>
                 <lightning-layout-item padding="around-small" size="4">
-                    <lightning-combobox label="Sorting Order" options={sortOrders} class="sortOrder"></lightning-combobox>
+                    <lightning-combobox label="Sorting Order" options={sortOrder} class="sortOrder"></lightning-combobox>
                 </lightning-layout-item>
             </lightning-layout>
         </lightning-card>
