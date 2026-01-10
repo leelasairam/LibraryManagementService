@@ -21,6 +21,8 @@ export default class NewOrEditReport extends LightningModal {
         { label: 'Equal', value: '=' },
         { label: 'Not Equal', value: '!=' },
         { label: 'Contains', value: 'LIKE' },
+        { label: 'Greater then', value: '>' },
+        { label: 'Less then', value: '<' }
     ];
     obj='';
     @track fieldDataTypeMap = new Map();
@@ -71,7 +73,7 @@ export default class NewOrEditReport extends LightningModal {
 
     addFilterRow(){
         //this.filterCounterList.push({Id:++this.filterCounter,Field:'',Operation:'',Value:''});
-        this.filterCounterList = [...this.filterCounterList,{Id:++this.filterCounter,Field:'',Operation:'',Value:'',dataType:'STRING',inpType:'text',placeholderTxt:'Enter value'}];
+        this.filterCounterList = [...this.filterCounterList,{Id:++this.filterCounter,Field:'',Operation:'',Value:'',dataType:'STRING',inpType:'text',placeholderTxt:'Enter value',operationsList:[]}];
     }
 
     handleInpChanges(event){
@@ -85,40 +87,50 @@ export default class NewOrEditReport extends LightningModal {
                     console.log('fieldDataType : ', fieldDataType)
                     let htmlInpType = '';
                     let placeholderText = 'Enter Value';
+                    let opList = [];
                     switch(fieldDataType){
                         case 'BOOLEAN':
                             placeholderText = "Enter TRUE or FALSE";
                             htmlInpType = 'checkbox';
+                            opList = [{ label: 'Equal', value: '=' }];
                             break;
                         case 'DATETIME':
                             htmlInpType = 'datetime';
                             placeholderText = '';
+                            opList = [{ label: 'Equal', value: '=' },{ label: 'Not Equal', value: '!=' },{ label: 'Greater then', value: '>' },{ label: 'Less then', value: '<' }];
                             break;
                         case 'DATE':
                             htmlInpType = 'date';
                             placeholderText = '';
+                            opList = [{ label: 'Equal', value: '=' },{ label: 'Not Equal', value: '!=' },{ label: 'Greater then', value: '>' },{ label: 'Less then', value: '<' }];
                             break;
                         case 'DOUBLE':
                         case 'PERCENT':
                             htmlInpType = 'number';
+                            opList = [{ label: 'Equal', value: '=' },{ label: 'Not Equal', value: '!=' },{ label: 'Greater then', value: '>' },{ label: 'Less then', value: '<' }];
                             break;
                         case 'URL':
                             htmlInpType = 'url';
+                            opList = [{ label: 'Equal', value: '=' },{ label: 'Not Equal', value: '!=' },{ label: 'Contains', value: 'LIKE' }];
                             break;
                         case 'EMAIL':
                             htmlInpType = 'email';
+                            opList = [{ label: 'Equal', value: '=' },{ label: 'Not Equal', value: '!=' },{ label: 'Contains', value: 'LIKE' }];
                             break;
                         case 'PHONE':
                             htmlInpType = 'tel';
+                            opList = [{ label: 'Equal', value: '=' },{ label: 'Not Equal', value: '!=' }];
                             break;
                         case 'TIME':
                             htmlInpType = 'time';
                             placeholderText = '';
+                            opList = [{ label: 'Equal', value: '=' },{ label: 'Not Equal', value: '!=' },{ label: 'Greater then', value: '>' },{ label: 'Less then', value: '<' }];
                             break;
                         default:
                             htmlInpType = 'text';
+                            opList = [{ label: 'Equal', value: '=' },{ label: 'Not Equal', value: '!=' },{ label: 'Contains', value: 'LIKE' }];
                     }
-                    return { ...row, [inputType]: value,Value:'',dataType : fieldDataType, inpType : htmlInpType, placeholderTxt : placeholderText};
+                    return { ...row, [inputType]: value,Value:'',dataType : fieldDataType, inpType : htmlInpType, placeholderTxt : placeholderText,operationsList:opList,Operation:null};
                 }
                 return { ...row, [inputType]: value };
             }
@@ -137,19 +149,57 @@ export default class NewOrEditReport extends LightningModal {
         this.displayFields = event.detail.value;
     }
 
+    generateLogic(){
+        const filterRowSize = this.filterCounterList.length;
+        let generalLogic = '';
+        this.filterCounterList.forEach((fr,index)=>{
+            generalLogic += fr.Id;
+            if(++index<filterRowSize){
+                generalLogic += ' AND ';
+            }
+        })
+        return generalLogic;
+    }
+
+    queryValidation(reportName){
+        let msg = '';
+        let valid = true;
+        if(reportName == '' || reportName==null){
+            valid = false;
+            msg = 'Please provide report name';
+        }
+        if(this.displayFields == '' || this.displayFields == null){
+            valid = false;
+            msg = 'Please select atleast one field to display';
+        }
+        if(this.filterCounterList.length === 1 && (this.filterCounterList[0].Operation==null || this.filterCounterList[0].Operation=='' || this.filterCounterList[0].Field==null || this.filterCounterList[0].Field==null)){
+            valid = false;
+            msg = 'Please add atleast one filter row';
+        }
+        return {ok:valid,message:msg};
+    }
+
     subsituteCustomLogic(){
         let query = '';
         const reportName = this.template.querySelector('.reportName').value;
         const container = this.refs.customFilterOrderby;
-        let logic = container.querySelector('.cLogic').value; //1 AND (2 OR 3)
+        let logic = container.querySelector('.cLogic').value || this.generateLogic(); //1 AND (2 OR 3)
         const plainLogic = logic;
         const sortbyField = container.querySelector('.sortBy').value;
         const sortOrder = container.querySelector('.sortOrder').value;
-        console.log(logic)
+        console.log(logic);
         const logicStrArray = logic.match(/\d+/g) || [];
         const logicNumArray = logicStrArray.map(n=>(Number(n)));
+        const isValid = this.queryValidation(reportName);
+        if(!isValid.ok){
+            this.toast('Error',isValid.message,'error');
+            return;
+        }
         logicNumArray.forEach(i=>{
             const filterRowStr = this.getfilterRowStr(i);
+            if(filterRowStr=='error'){
+                return;
+            }
             // replace ONLY the exact number (not partial matches)
             const regex = new RegExp(`\\b${i}\\b`, 'g');
             logic = logic.replace(regex,filterRowStr);
@@ -191,7 +241,8 @@ export default class NewOrEditReport extends LightningModal {
     getfilterRowStr(Id){
         const filterRow = this.filterCounterList.find(row=>row.Id===Id);
         if (!filterRow){
-            return '';
+            this.toast('Error','Enter available row number in custom logic','error');
+            return 'error';
         } 
         let filterStr = '';
         const operation = filterRow?.Operation;

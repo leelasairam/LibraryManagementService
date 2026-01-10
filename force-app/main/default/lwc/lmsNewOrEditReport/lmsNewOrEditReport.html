@@ -31,7 +31,7 @@
                         <tr key={i.Id}>
                             <td>{i.Id}</td>
                             <td><lightning-combobox variant="label-hidden" label="Fields" placeholder="Select Field" options={objFields} data-id={i.Id} name="Field" onchange={handleInpChanges} value={i.Field}></lightning-combobox></td>
-                            <td><lightning-combobox variant="label-hidden" label="Operation" placeholder="Select Operation" options={operations} data-id={i.Id} name="Operation" onchange={handleInpChanges} value={i.Operation}></lightning-combobox></td>
+                            <td><lightning-combobox variant="label-hidden" label="Operation" placeholder="Select Operation" options={i.operationsList} data-id={i.Id} name="Operation" onchange={handleInpChanges} value={i.Operation}></lightning-combobox></td>
                             <td><lightning-input variant="label-hidden" label="Value" type={i.inpType} placeholder={i.placeholderTxt} data-id={i.Id} name="Value" onchange={handleInpChanges} value={i.Value}></lightning-input></td>
                             <td><lightning-button-icon icon-name="utility:close" class="slds-p-vertical_medium" data-id={i.Id} onclick={removeRow}></lightning-button-icon></td>
                         </tr>
