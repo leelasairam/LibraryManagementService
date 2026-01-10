@@ -140,8 +140,14 @@ export default class NewOrEditReport extends LightningModal {
     }
 
     removeRow(event){
+        if(this.filterCounterList.length<=1){
+            this.toast('Error','You cannot remove. Atleast one row should be there.','error');
+            return;
+        }
         const Id = event.target.dataset.id;
         this.filterCounterList = this.filterCounterList.filter(i=>i.Id!=Id);
+        this.filterCounterList = this.filterCounterList.map((item,index)=>({...item,Id:index+1}));
+        this.filterCounter = this.filterCounterList.length;
         console.log(JSON.stringify(this.filterCounterList));
     }
 
@@ -161,7 +167,7 @@ export default class NewOrEditReport extends LightningModal {
         return generalLogic;
     }
 
-    queryValidation(reportName){
+    queryValidation(reportName,plainLogic,logicNumArray){
         let msg = '';
         let valid = true;
         if(reportName == '' || reportName==null){
@@ -176,6 +182,27 @@ export default class NewOrEditReport extends LightningModal {
             valid = false;
             msg = 'Please add atleast one filter row';
         }
+        if(plainLogic){
+            const logicRegex = /^\s*\(*\s*\d+(?:\s+(?:AND|OR)\s+\(*\s*\d+\s*\)*)*\s*$/i;
+            const isValidLogic = logicRegex.test(plainLogic);
+            if(!isValidLogic){
+                valid = false;
+                msg = "Please enter valid Custom Logic. Only number, space, 'AND', 'OR' are allowed. Custom Logic should be in following pattren '1 AND (2 OR 3)' or '1 AND 2'";
+            }
+        }
+        if(this.filterCounterList){
+            this.filterCounterList.forEach(row=>{
+                if(row.Field == '' || row.Operation == '' || row.Field == null || row.Operation == null){
+                    valid = false;
+                    msg = 'Field and Operation cannot be blank for any filter row. If filter row not needed, please remove';
+                }
+                if(!logicNumArray.includes(Number(row.Id))){
+                    valid = false;
+                    msg = 'Please enter all row ids in custom logic';
+                }
+            })
+        }
+
         return {ok:valid,message:msg};
     }
 
@@ -190,12 +217,12 @@ export default class NewOrEditReport extends LightningModal {
         console.log(logic);
         const logicStrArray = logic.match(/\d+/g) || [];
         const logicNumArray = logicStrArray.map(n=>(Number(n)));
-        const isValid = this.queryValidation(reportName);
+        const isValid = this.queryValidation(reportName,plainLogic,logicNumArray);
         if(!isValid.ok){
             this.toast('Error',isValid.message,'error');
             return;
         }
-        logicNumArray.forEach(i=>{
+        /*logicNumArray.forEach(i=>{
             const filterRowStr = this.getfilterRowStr(i);
             if(filterRowStr=='error'){
                 return;
@@ -203,7 +230,17 @@ export default class NewOrEditReport extends LightningModal {
             // replace ONLY the exact number (not partial matches)
             const regex = new RegExp(`\\b${i}\\b`, 'g');
             logic = logic.replace(regex,filterRowStr);
-        })
+        })*/
+        for(const i of logicNumArray){
+            const filterRowStr = this.getfilterRowStr(i);
+            if(filterRowStr=='error'){
+                return;
+            }
+            // replace ONLY the exact number (not partial matches)
+            const regex = new RegExp(`\\b${i}\\b`, 'g');
+            logic = logic.replace(regex,filterRowStr);
+        }
+
         console.log(logic);
         query = `SELECT ${this.displayFields} FROM ${this.obj}`;
         if((this.filterCounterList[0].Field != null && this.filterCounterList[0].Field != '') || filterCounterList.length>1){
