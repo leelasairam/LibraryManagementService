@@ -157,15 +157,20 @@ public class LMSController {
     		Schema.DescribeSObjectResult describe = objType.getDescribe();
             Map<String, Schema.SObjectField> fields = describe.fields.getMap();
             for (String apiName : fields.keySet()) {
+                system.debug(apiName);
                 Schema.DescribeFieldResult fld = fields.get(apiName).getDescribe();
                 if(obj == objectApiName){
-                    fieldsToReturn.put(apiName, new list<String>{fld.getLabel(),String.valueof(fld.getType())});
-                    if(apiName == 'OwnerId' || apiName == 'CreatedById' || apiName == 'LastModifiedById'){
-                        fieldsToReturn.put(apiName.replace('id','.name'), new list<String>{fld.getLabel()+'> Name',String.valueof(fld.getType())});
+                    if(fld.isFilterable()){
+                        fieldsToReturn.put(fld.getName(), new list<String>{fld.getLabel(),String.valueof(fld.getType())});
+                        if(apiName == 'OwnerId' || apiName == 'CreatedById' || apiName == 'LastModifiedById'){
+                            fieldsToReturn.put(fld.getName().replace('Id','.Name'), new list<String>{fld.getLabel()+'> Name',String.valueof(fld.getType())});
+                        }  
                     }
                 }
                 else{
-                    fieldsToReturn.put(obj.replace('__c','__r.')+apiName,new list<String>{objectLabel+'>'+fld.getLabel(),String.valueof(fld.getType())});
+                    if(fld.isFilterable()){
+                        fieldsToReturn.put(obj.replace('__c','__r.')+fld.getName(),new list<String>{objectLabel+'>'+fld.getLabel(),String.valueof(fld.getType())});
+                    }
                 }
             }
         }
@@ -187,6 +192,34 @@ public class LMSController {
             rpt.Id = rptId;   
         }
         upsert rpt;
+    }
+    
+    @AuraEnabled
+    public static string validateQueryBackend(string q){
+        String querryStatus = 'ok';
+        string querry1 = q + ' LIMIT 1';
+        try{
+           list<sobject>querryRes = database.query(querry1);
+        }
+        catch(Exception e){
+            querryStatus = e.getMessage();
+        }
+        return querryStatus;
+    }
+    
+    @AuraEnabled(cacheable=true)
+    public static list<LMS_Reports__c> getCurrentUserRpts(Id UID){
+        return [SELECT Id,Report_Name__c FROM LMS_Reports__c WHERE OwnerId =: UID];
+    }
+    
+    @AuraEnabled(cacheable=true)
+    public static LMS_Reports__c getReportDtls(Id reportId){
+        return [SELECT Id,Name,Report_Name__c,Display_Fields__c,Custom_Logic__c,Filters__c,Object__c,OwnerId,Query__c,Sort_By__c,Sorting_Order__c FROM LMS_Reports__c WHERE Id =: reportId LIMIT 1];
+    }
+    
+    @AuraEnabled(cacheable=true)
+    public static list<sObject> getQueryDate(String q){
+        return database.query(q);
     }
     
     public class LMSReportWrapper{

@@ -124,8 +124,53 @@
             </lightning-tab>
 
             <!--###Quick Reports-->
-            <lightning-tab label="Quick Reports" value="Quick Reports" onactive={handleTabsets} lwc:ref="quickReports">
-                <lightning-button label="New Report" name="New" onclick={modifyReportModal}></lightning-button>
+            <lightning-tab label="Quick Reports" value="Quick Reports" onactive={handleTabsets} lwc:ref="quickReports"> 
+                <lightning-card>
+
+                    <p slot="title"><lightning-icon icon-name="standard:report" size="small"></lightning-icon> Reports</p>
+
+                    <lightning-layout slot="actions">
+
+                        <lightning-layout-item padding="around-medium">
+                            <div>
+                                <lightning-combobox
+                                    placeholder="Select Report"
+                                    options={myReports}
+                                    onchange={handleReportChange}
+                                    variant="label-hidden"
+                                    >
+                                </lightning-combobox>
+                            </div>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item padding="around-small">
+                            <div>
+                                <lightning-button-group>
+                                    <lightning-button label="New Report" name="New" onclick={modifyReportModal}></lightning-button>
+                                    <lightning-button label="Edit"></lightning-button>
+                                    <lightning-button label="Save" icon-name="utility:save"></lightning-button>
+                                    <lightning-button-menu alternative-text="Show menu" variant="border-filled">
+                                        <lightning-menu-item label="Menu Item One" value="item1"></lightning-menu-item>
+                                        <lightning-menu-item label="Menu Item Two" value="item2"></lightning-menu-item>
+                                        <lightning-menu-item label="Menu Item Three" value="item3"></lightning-menu-item>
+                                    </lightning-button-menu>
+                                </lightning-button-group>
+                            </div>
+                        </lightning-layout-item>
+                    </lightning-layout>
+
+                    <!--Body-->
+                    <div class="slds-p-horizontal_small">
+                        <div style="height: 500px;">
+                            <lightning-datatable
+                                    key-field="cId"
+                                    data={reportData}
+                                    columns={reportCols}>
+                            </lightning-datatable>
+                        </div>
+                    </div>
+
+                </lightning-card>
             </lightning-tab>
         </lightning-tabset>
     </div>

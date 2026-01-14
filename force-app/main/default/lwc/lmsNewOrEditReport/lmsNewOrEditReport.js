@@ -2,6 +2,7 @@ import { api,track } from 'lwc';
 import LightningModal from 'lightning/modal';
 import getFields from '@salesforce/apex/LMSController.getFields';
 import upsertLMSReport from '@salesforce/apex/LMSController.upsertLMSReport';
+import validateQueryBackend from '@salesforce/apex/LMSController.validateQueryBackend';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class NewOrEditReport extends LightningModal {
@@ -33,7 +34,7 @@ export default class NewOrEditReport extends LightningModal {
 
     connectedCallback(){
         if(this.isNew){
-            this.filterCounterList = [{Id:1,Field:'',Operation:'',Value:'',dataType:'STRING',inpType:'text',placeholderTxt:'Enter value'}];
+            this.filterCounterList = [{Id:1,Field:'',Operation:'',Value:'',dataType:'STRING',inpType:'text',placeholderTxt:'Enter value',operationsList:[]}];
             this.displayFields = '';
         }
         else{
@@ -192,9 +193,9 @@ export default class NewOrEditReport extends LightningModal {
         }
         if(this.filterCounterList){
             this.filterCounterList.forEach(row=>{
-                if(row.Field == '' || row.Operation == '' || row.Field == null || row.Operation == null){
+                if(row.Field == '' || row.Operation == '' || row.Field == null || row.Operation == null || ((row.dataType == 'DATETIME' || row.dataType == 'DOUBLE' || row.dataType == 'DATE' || row.dataType == 'PERCENT' || row.dataType == 'INTEGER' || row.dataType == 'CURRENCY' || row.dataType == 'TIME') && (row.Value == '' || row.Value==null))){
                     valid = false;
-                    msg = 'Field and Operation cannot be blank for any filter row. If filter row not needed, please remove';
+                    msg = 'Field, Operation and Value cannot be blank for any filter row. If filter row not needed, please remove';
                 }
                 if(!logicNumArray.includes(Number(row.Id))){
                     valid = false;
@@ -206,8 +207,9 @@ export default class NewOrEditReport extends LightningModal {
         return {ok:valid,message:msg};
     }
 
-    subsituteCustomLogic(){
+    async subsituteCustomLogic(){
         let query = '';
+        let isValidQuerry = '';
         const reportName = this.template.querySelector('.reportName').value;
         const container = this.refs.customFilterOrderby;
         let logic = container.querySelector('.cLogic').value || this.generateLogic(); //1 AND (2 OR 3)
@@ -262,7 +264,19 @@ export default class NewOrEditReport extends LightningModal {
         }
         console.log(JSON.stringify(rptWrapperData));
         const reportId1 = this.isNew ? null : this.reportId;
-        upsertLMSReport({report:rptWrapperData,rptId:reportId1})
+
+        await validateQueryBackend({q:query})
+        .then(result=>{
+            isValidQuerry = result;
+        })
+        .catch(error=>{
+            console.log(error);
+        })
+        if(isValidQuerry!='ok'){
+            this.toast('Error',isValidQuerry,'error');
+            return;
+        }
+        await upsertLMSReport({report:rptWrapperData,rptId:reportId1})
         .then(result=>{
             console.log(result);
             this.close('success');
@@ -294,6 +308,7 @@ export default class NewOrEditReport extends LightningModal {
             case 'PERCENT':
             case 'INTEGER':
             case 'CURRENCY':
+            case 'DOUBLE':
                 value = value;
                 break;
             default:

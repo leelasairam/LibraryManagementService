@@ -1,4 +1,5 @@
 import { LightningElement,track } from 'lwc';
+import userId from '@salesforce/user/Id';
 import getBooks from '@salesforce/apex/LMSController.getBooks';
 import getBorrowedBooks from '@salesforce/apex/LMSController.getBorrowedBooks';
 import getUsers from '@salesforce/apex/LMSController.getUsers';
@@ -7,7 +8,12 @@ import {getOverDueDays} from './libraryHelper';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import BorrowBookModal from 'c/borrowBookModal';
 import lmsNewOrEditReport from 'c/lmsNewOrEditReport';
+import getCurrentUserRpts from '@salesforce/apex/LMSController.getCurrentUserRpts';
+import getReportDtls from '@salesforce/apex/LMSController.getReportDtls';
+import getQueryDate from '@salesforce/apex/LMSController.getQueryDate';
+
 export default class Library extends LightningElement {
+    currentUserId = userId;
     @track books = [];
     @track borrowedBooks = [];
     @track lmsUsers = [];
@@ -44,7 +50,12 @@ export default class Library extends LightningElement {
         { label: 'Phone', fieldName: 'Phone__c'},
         { label: 'Email', fieldName: 'Email__c'},
         { label: 'Govt Id', fieldName: 'Govt_Id__c'},
-    ]
+    ];
+
+    @track myReports = [];
+    @track currentReport = {};
+    @track reportCols = [];
+    @track reportData = [];
 
     /*connectedCallback(){
         this.fetchBooks(false,null,null);
@@ -76,7 +87,7 @@ export default class Library extends LightningElement {
             this.fetchUsers(null);
         }
         else if(this.activeTab === 'Quick Reports'){
-            
+            this.fetchUserRpts();
         }
     }
 
@@ -261,5 +272,51 @@ export default class Library extends LightningElement {
             
         }
         console.log(result);
+    }
+
+    fetchUserRpts(){
+        getCurrentUserRpts({UID:this.currentUserId})
+        .then(result=>{
+            this.myReports = result.map(rpt=>({label:rpt.Report_Name__c,value:rpt.Id}));
+            console.log(JSON.stringify(this.myReports));
+        })
+        .catch(error=>{
+            console.log(error);
+        })
+    }
+
+    async handleReportChange(event) {
+        const rptId = event.target.value;
+        if (rptId) {
+            try {
+                const result = await getReportDtls({ reportId: rptId });
+
+                this.currentReport = result;
+                this.reportCols = result?.Display_Fields__c
+                    .split(',')
+                    .map(fld => ({ label: fld, fieldName: fld }));
+
+                this.reportData = await this.fetchQueryData(result?.Query__c);
+                console.log(JSON.stringify(this.reportData));
+
+            } 
+            catch (error) {
+                console.log(error);
+            }
+        }
+    }
+
+    async fetchQueryData(query){
+        let data = [];
+        let recId = 0;
+        await getQueryDate({q:query})
+        .then(result=>{
+            data = result.map(rec=>({...rec,cId:++recId}));
+            console.log(JSON.stringify(data));
+        })
+        .catch(error=>{
+            console.log(error);
+        })
+        return data;
     }
 }
