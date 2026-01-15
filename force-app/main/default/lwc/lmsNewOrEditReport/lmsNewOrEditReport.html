@@ -4,7 +4,7 @@
     <!--Body-->
     <lightning-modal-body>
         <lightning-input label="Report Name" required="true" max-length="120" class="reportName"></lightning-input>
-        <lightning-combobox label="Object" placeholder="Select Object" options={objectAPINames} onchange={fetchObjFields} ></lightning-combobox>
+        <lightning-combobox label="Object" placeholder="Select Object" options={objectAPINames} onchange={fetchObjFields} value={obj}></lightning-combobox>
         <br/>
         <lightning-dual-listbox 
                         label="Select fields to dispaly"
@@ -17,7 +17,7 @@
         <br/>
         <lightning-card>
             <p slot="title"><lightning-icon icon-name="utility:filterList" size="small"></lightning-icon> &nbsp; Filters</p>
-            <lightning-button label="Add Filter Row" onclick={addFilterRow} slot="actions" variant="success"></lightning-button>
+            <lightning-button label="Add Filter Row" onclick={addFilterRow} slot="actions" variant="success" icon-name="utility:new"></lightning-button>
             <table>
                 <tbody>
                     <tr>
@@ -54,7 +54,12 @@
     </lightning-modal-body>
     <!--Footer-->
     <lightning-modal-footer>
-        <lightning-button label="Save" class="margin-right" variant="brand" onclick={subsituteCustomLogic}></lightning-button>
+        <lightning-button label="Save" class="margin-right" variant="brand" onclick={subsituteCustomLogic} icon-name="utility:save"></lightning-button>
         <lightning-button label="Close" onclick={handleClose} variant="destructive-text"></lightning-button>
     </lightning-modal-footer>
+
+    <!--Loading-->
+    <template if:true={loading}>
+        <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
+    </tempalte>
 </template>

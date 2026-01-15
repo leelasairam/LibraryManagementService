@@ -262,10 +262,15 @@ export default class Library extends LightningElement {
     async modifyReportModal(event){
         const btn = event.target.name;
         const isNewModal = btn == 'New' ? true : false;
+        console.log(btn,isNewModal,this.currentReport);
+        if(!isNewModal && !this.currentReport.Id){
+            this.toast('Error','Please select the report to edit','error');
+            return;
+        }
         const result = await lmsNewOrEditReport.open({
             size: 'medium',
             title: isNewModal ? 'New Report' : 'Edit Report',
-            reportId : isNewModal ? null : null,
+            reportId : isNewModal ? null : this.currentReport?.Id,
             isNew : isNewModal ? true : false,
         });
         if(result === 'success'){
@@ -274,8 +279,9 @@ export default class Library extends LightningElement {
         console.log(result);
     }
 
-    fetchUserRpts(){
-        getCurrentUserRpts({UID:this.currentUserId})
+    async fetchUserRpts(){
+        this.load = true;
+        await getCurrentUserRpts({UID:this.currentUserId})
         .then(result=>{
             this.myReports = result.map(rpt=>({label:rpt.Report_Name__c,value:rpt.Id}));
             console.log(JSON.stringify(this.myReports));
@@ -283,12 +289,16 @@ export default class Library extends LightningElement {
         .catch(error=>{
             console.log(error);
         })
+        .finally(()=>{
+            this.load = false;
+        })
     }
 
     async handleReportChange(event) {
         const rptId = event.target.value;
         if (rptId) {
             try {
+                this.load = true;
                 const result = await getReportDtls({ reportId: rptId });
 
                 this.currentReport = result;
@@ -297,6 +307,7 @@ export default class Library extends LightningElement {
                     .map(fld => ({ label: fld, fieldName: fld }));
 
                 this.reportData = await this.fetchQueryData(result?.Query__c);
+                this.load = false;
                 console.log(JSON.stringify(this.reportData));
 
             } 

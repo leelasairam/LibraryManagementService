@@ -3,6 +3,7 @@ import LightningModal from 'lightning/modal';
 import getFields from '@salesforce/apex/LMSController.getFields';
 import upsertLMSReport from '@salesforce/apex/LMSController.upsertLMSReport';
 import validateQueryBackend from '@salesforce/apex/LMSController.validateQueryBackend';
+import getReportDtls from '@salesforce/apex/LMSController.getReportDtls';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class NewOrEditReport extends LightningModal {
@@ -12,7 +13,9 @@ export default class NewOrEditReport extends LightningModal {
         { label: 'LMS Users', value: 'LMS_Users__c' },
     ];
 
+    loading=false;
     @track objFields = [];
+    @track reportInfo = {};
     filterCounter = 1;
     filterCounterList;
     displayFields;
@@ -32,12 +35,34 @@ export default class NewOrEditReport extends LightningModal {
         { label: 'Decending', value: 'DESC' },
     ]
 
-    connectedCallback(){
+    async connectedCallback(){
         if(this.isNew){
             this.filterCounterList = [{Id:1,Field:'',Operation:'',Value:'',dataType:'STRING',inpType:'text',placeholderTxt:'Enter value',operationsList:[]}];
             this.displayFields = '';
         }
         else{
+            console.log('reportId',this.reportId);
+            if(this.reportId){
+                try{
+                    this.loading = true;
+                    const rptDtls = await getReportDtls({reportId:this.reportId});
+                    this.loading = false;
+                    this.reportInfo = rptDtls;
+                    this.obj = rptDtls?.Object__c;
+                    const objFields = await this.fetchObjFields();
+                    this.filterCounterList = JSON.parse(rptDtls?.Filters__c);
+                    this.displayFields = rptDtls?.Display_Fields__c.split(',');
+                    this.template.querySelector('.reportName').value = rptDtls?.Report_Name__c;
+                    this.template.querySelector('.cLogic').value = rptDtls?.Custom_Logic__c;
+                    this.template.querySelector('.sortBy').value = rptDtls?.Sort_By__c;
+                    this.template.querySelector('.sortOrder').value = rptDtls?.Sorting_Order__c;
+
+                }
+                catch(error){
+                    console.log(error);
+                    this.loading = false;
+                }
+            }
 
         }
     }
@@ -55,10 +80,13 @@ export default class NewOrEditReport extends LightningModal {
         this.dispatchEvent(evt);
     }
 
-    fetchObjFields(event){
-        this.obj = event.target.value;
+    async fetchObjFields(event){
+        this.loading = true;
+        if(this.isNew){
+            this.obj = event.target.value;
+        }
         const fields = [];
-        getFields({objectApiName:this.obj})
+        await getFields({objectApiName:this.obj})
         .then(result=>{
             console.log(JSON.stringify(result));
             for (const [fieldAPIName, fieldLabel] of Object.entries(result)) {
@@ -69,6 +97,9 @@ export default class NewOrEditReport extends LightningModal {
         })
         .catch(error=>{
             console.log(error);
+        })
+        .finally(()=>{
+            this.loading = false;
         })
     }
 
@@ -276,6 +307,7 @@ export default class NewOrEditReport extends LightningModal {
             this.toast('Error',isValidQuerry,'error');
             return;
         }
+        this.loading = true;
         await upsertLMSReport({report:rptWrapperData,rptId:reportId1})
         .then(result=>{
             console.log(result);
@@ -285,6 +317,9 @@ export default class NewOrEditReport extends LightningModal {
         .catch(error=>{
             console.log(error);
             this.toast('Error','Something went wrong','error');
+        })
+        .finally(()=>{
+            this.loading = false;
         })
 
     }

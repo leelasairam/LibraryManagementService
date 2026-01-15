@@ -146,13 +146,12 @@
                         <lightning-layout-item padding="around-small">
                             <div>
                                 <lightning-button-group>
-                                    <lightning-button label="New Report" name="New" onclick={modifyReportModal}></lightning-button>
-                                    <lightning-button label="Edit"></lightning-button>
-                                    <lightning-button label="Save" icon-name="utility:save"></lightning-button>
+                                    <lightning-button label="New Report" name="New" onclick={modifyReportModal} icon-name="utility:new"></lightning-button>
+                                    <lightning-button label="Edit" name = "Edit" onclick={modifyReportModal} icon-name="utility:edit"></lightning-button>
+                                    <lightning-button label="Refresh" icon-name="utility:refresh"></lightning-button>
                                     <lightning-button-menu alternative-text="Show menu" variant="border-filled">
-                                        <lightning-menu-item label="Menu Item One" value="item1"></lightning-menu-item>
-                                        <lightning-menu-item label="Menu Item Two" value="item2"></lightning-menu-item>
-                                        <lightning-menu-item label="Menu Item Three" value="item3"></lightning-menu-item>
+                                        <lightning-menu-item label="Export" value="item1" icon-name="utility:download"></lightning-menu-item>
+                                        <lightning-menu-item label="Share" value="item2" icon-name="utility:internal_share"></lightning-menu-item>
                                     </lightning-button-menu>
                                 </lightning-button-group>
                             </div>
@@ -165,7 +164,9 @@
                             <lightning-datatable
                                     key-field="cId"
                                     data={reportData}
-                                    columns={reportCols}>
+                                    columns={reportCols}
+                                    hide-checkbox-column
+                                    show-row-number-column>
                             </lightning-datatable>
                         </div>
                     </div>
