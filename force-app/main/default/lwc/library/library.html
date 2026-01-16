@@ -147,11 +147,11 @@
                             <div>
                                 <lightning-button-group>
                                     <lightning-button label="New Report" name="New" onclick={modifyReportModal} icon-name="utility:new"></lightning-button>
-                                    <lightning-button label="Edit" name = "Edit" onclick={modifyReportModal} icon-name="utility:edit"></lightning-button>
-                                    <lightning-button label="Refresh" icon-name="utility:refresh"></lightning-button>
+                                    <lightning-button label="Edit" name = "Edit" onclick={modifyReportModal} icon-name="utility:edit" if:true={showRptActions}></lightning-button>
+                                    <lightning-button label="Refresh" icon-name="utility:refresh" if:true={showRptActions}></lightning-button>
                                     <lightning-button-menu alternative-text="Show menu" variant="border-filled">
-                                        <lightning-menu-item label="Export" value="item1" icon-name="utility:download"></lightning-menu-item>
-                                        <lightning-menu-item label="Share" value="item2" icon-name="utility:internal_share"></lightning-menu-item>
+                                        <lightning-menu-item label="Export" value="item1" icon-name="utility:download" if:true={showRptActions}></lightning-menu-item>
+                                        <lightning-menu-item label="Share" value="item2" icon-name="utility:internal_share" if:true={showRptActions}></lightning-menu-item>
                                     </lightning-button-menu>
                                 </lightning-button-group>
                             </div>

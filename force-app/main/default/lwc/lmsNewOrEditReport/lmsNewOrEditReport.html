@@ -4,7 +4,7 @@
     <!--Body-->
     <lightning-modal-body>
         <lightning-input label="Report Name" required="true" max-length="120" class="reportName"></lightning-input>
-        <lightning-combobox label="Object" placeholder="Select Object" options={objectAPINames} onchange={fetchObjFields} value={obj}></lightning-combobox>
+        <lightning-combobox label="Object" placeholder="Select Object" options={objectAPINames} onchange={fetchObjFields} value={obj} disabled={isEdit}></lightning-combobox>
         <br/>
         <lightning-dual-listbox 
                         label="Select fields to dispaly"

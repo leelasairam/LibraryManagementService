@@ -56,6 +56,7 @@ export default class Library extends LightningElement {
     @track currentReport = {};
     @track reportCols = [];
     @track reportData = [];
+    showRptActions = false;
 
     /*connectedCallback(){
         this.fetchBooks(false,null,null);
@@ -296,6 +297,7 @@ export default class Library extends LightningElement {
 
     async handleReportChange(event) {
         const rptId = event.target.value;
+        this.showRptActions = true;
         if (rptId) {
             try {
                 this.load = true;
@@ -304,9 +306,22 @@ export default class Library extends LightningElement {
                 this.currentReport = result;
                 this.reportCols = result?.Display_Fields__c
                     .split(',')
-                    .map(fld => ({ label: fld, fieldName: fld }));
+                    .map(fld => {
+                        if(fld!='Name' &&  fld!='name'){
+                            return { label: fld.replace('_', ' ').replace('__c',''), fieldName: fld }
+                        }
+                        else{
+                            return {
+                                    label: 'Name',
+                                    fieldName: 'recordLink',
+                                    type: 'url',
+                                    typeAttributes: { label: { fieldName: 'Name' }, target: '_blank' }
+                            }
+                        }
+                    });
 
                 this.reportData = await this.fetchQueryData(result?.Query__c);
+                this.reportData = this.reportData.map(i=>({...i,recordLink:'/'+i.Id}));
                 this.load = false;
                 console.log(JSON.stringify(this.reportData));
 

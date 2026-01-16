@@ -21,6 +21,7 @@ export default class NewOrEditReport extends LightningModal {
     displayFields;
     @api reportId;
     @api isNew;
+    isEdit=false;
     operations = [
         { label: 'Equal', value: '=' },
         { label: 'Not Equal', value: '!=' },
@@ -41,6 +42,7 @@ export default class NewOrEditReport extends LightningModal {
             this.displayFields = '';
         }
         else{
+            this.isEdit = true;
             console.log('reportId',this.reportId);
             if(this.reportId){
                 try{
@@ -275,12 +277,16 @@ export default class NewOrEditReport extends LightningModal {
         }
 
         console.log(logic);
-        query = `SELECT ${this.displayFields} FROM ${this.obj}`;
+        console.log(this.displayFields);
+        const hasId = this.displayFields.map(s => s.trim()).includes('Id');
+        console.log(hasId);
+        const querryPrefix = hasId ? '' : 'Id,';
+        query = `SELECT ${querryPrefix} ${this.displayFields} FROM ${this.obj}`;
         if((this.filterCounterList[0].Field != null && this.filterCounterList[0].Field != '') || filterCounterList.length>1){
-            query = `SELECT ${this.displayFields} FROM ${this.obj} WHERE ${logic}`;
+            query = `SELECT ${querryPrefix} ${this.displayFields} FROM ${this.obj} WHERE ${logic}`;
         }
         if(sortbyField != null && sortbyField != ''){
-            query = `SELECT ${this.displayFields} FROM ${this.obj} WHERE ${logic} ORDER BY ${sortbyField} ${(sortOrder!=null && sortOrder!='') ? sortOrder : 'DESC'}`;
+            query = `SELECT ${querryPrefix} ${this.displayFields} FROM ${this.obj} WHERE ${logic} ORDER BY ${sortbyField} ${(sortOrder!=null && sortOrder!='') ? sortOrder : 'DESC'}`;
         }
         console.log(query);
         const rptWrapperData = {
