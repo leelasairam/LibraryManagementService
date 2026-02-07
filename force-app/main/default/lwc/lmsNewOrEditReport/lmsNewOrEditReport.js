@@ -5,6 +5,8 @@ import upsertLMSReport from '@salesforce/apex/LMSController.upsertLMSReport';
 import validateQueryBackend from '@salesforce/apex/LMSController.validateQueryBackend';
 import getReportDtls from '@salesforce/apex/LMSController.getReportDtls';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { loadScript } from 'lightning/platformResourceLoader';
+import sheetjs from '@salesforce/resourceUrl/sheetjs';
 
 export default class NewOrEditReport extends LightningModal {
     objectAPINames = [

@@ -11,6 +11,8 @@ import lmsNewOrEditReport from 'c/lmsNewOrEditReport';
 import getCurrentUserRpts from '@salesforce/apex/LMSController.getCurrentUserRpts';
 import getReportDtls from '@salesforce/apex/LMSController.getReportDtls';
 import getQueryDate from '@salesforce/apex/LMSController.getQueryDate';
+import { loadScript } from 'lightning/platformResourceLoader';
+import sheetjs from '@salesforce/resourceUrl/sheetjs';
 
 export default class Library extends LightningElement {
     currentUserId = userId;
@@ -344,5 +346,34 @@ export default class Library extends LightningElement {
             console.log(error);
         })
         return data;
+    }
+
+    async exportCSV(){
+        this.load = true;
+        const rows = [];
+        const headers = this.currentReport?.Display_Fields__c.split(',');
+        const data = await this.fetchQueryData(this.currentReport?.Query__c);
+        rows.push(headers);
+        data.forEach(row=>{
+            rows.push(this.buildRow(row));
+        })
+        const today = new Date();
+        const title = `${this.currentReport?.Report_Name__c}_${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}.xlsx`;
+        await loadScript(this, sheetjs);
+        var wb = XLSX.utils.book_new();
+        var ws = XLSX.utils.aoa_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, "data");
+        XLSX.writeFile(wb, title);
+        this.load = false;
+    }
+
+    buildRow(row){
+        const dataRow = [];
+        for (const key in row) {
+            if(key!='cId'){
+                dataRow.push(row[key]);
+            }
+        }
+        return dataRow;
     }
 }
